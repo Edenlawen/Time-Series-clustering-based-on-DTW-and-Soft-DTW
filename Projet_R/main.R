@@ -36,7 +36,7 @@ plot(google, type = 'l')
 print("Chercher fenetre viable")
 tps <- system.time({
   gapTaille <- 7
-  gapStart <- 400
+  gapStart <- 400i
   dataModif <-
     gapCreation(google, gapTaille / length(google), gapStart)$output_vector
   queryTaille <- 12
