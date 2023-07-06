@@ -20,15 +20,17 @@ source("R_function/EC_completion.r")
 source("R_function/globalF.r")
 source("R_function/compute.erreurRMSE.r")
 tp <- system.time({
-data("google")
-# google <- datasets::co2
+# data("google")
+google <- datasets::co2
 
-gan <- read_csv("csv/generated_data.csv")
-# google <- c(google,gan$`3.444022592320329750e+02`)
-google <- gan$`3.444022592320329750e+02`
+gan <- read_csv("csv/generated_data_850.csv")
+google <- c(google,gan$`3.546236651554245327e+02`)
+# google <- gan$`3.546236651554245327e+02`
 
 # google <- read_csv("csv/df_filled_1W_730.csv")
 # google <- google$Fluo_FFU[1:20000]
+
+plot(google, type = 'l')
 
 # Partie Chercher les fenêtres viables pour une taille de query donnée
 print("Chercher fenetre viable")
@@ -43,17 +45,20 @@ tps <- system.time({
   queryRef <- dataModif[(gapStart - queryTaille):(gapStart - 1)]
   fenetresViable <- data.frame("queryRef" = queryRef)
   repRef <- google[gapStart:(gapStart + gapTaille - 1)]
-  reponseVialbe <- data.frame("repRef" = repRef)
+  reponseViable <- data.frame("repRef" = repRef)
   debut <- 1
   fin <- debut + queryTaille
   
   if (length(google) < 1000) {
     step_threshold = 2
+    stepBase <- 2
   } else{
     if (length(google) > 10000) {
       step_threshold = 50
+      stepBase <- 50
     } else{
       step_threshold = 10
+      stepBase <- 10
     }
   }
   
@@ -63,7 +68,7 @@ tps <- system.time({
     threshold_cos = 0.995
   }
   
-  while (fin <= length(google)) {
+  while ((fin + queryTaille + gapTaille) < length(google)) {
     if (!(
       debut %in% seq(
         gapStart - queryTaille - queryTaille,
@@ -83,8 +88,8 @@ tps <- system.time({
           paste0("Debut = ", debut)
         
         repTemp <- dataModif[fin:(fin + gapTaille - 1)]
-        reponseVialbe <- cbind(reponseVialbe, repTemp)
-        colnames(reponseVialbe)[ncol(reponseVialbe)] <-
+        reponseViable <- cbind(reponseViable, repTemp)
+        colnames(reponseViable)[ncol(reponseViable)] <-
           paste0("Debut = ", debut)
       }
     }
@@ -102,15 +107,15 @@ tps <- system.time({
         step_threshold <-
           step_threshold - floor(step_threshold / 2)
         print(paste0("Pas assez de fenetre viable, votre step_threshold est passé à ",step_threshold))
-        rm(fenetresViable,reponseVialbe)
+        rm(fenetresViable,reponseViable)
         fenetresViable <- data.frame("queryRef" = queryRef)
-        reponseVialbe <- data.frame("repRef" = repRef)
+        reponseViable <- data.frame("repRef" = repRef)
       }
     }
   }
   fenetresViable <- subset(fenetresViable, select = -1)
-  reponseVialbe <- subset(reponseVialbe, select = -1)
-  rm(debut, fin, cosCompare, featureRef, queryTemp)
+  reponseViable <- subset(reponseViable, select = -1)
+  # rm(debut, fin, cosCompare, featureRef, queryTemp)
 })
 tps <- tps["elapsed"]
 print(paste(
@@ -282,7 +287,7 @@ print(paste(
 avgAmpClusterDTW <- rep(0, times = nbclusterDTW)
 avgAmpClusterSDTW <- rep(0, times = nbclusterSDTW)
 
-for (i in 1:length(reponseVialbe)) {
+for (i in 1:length(reponseViable)) {
   if (queryRef[1] >= fenetresViable[1, i]) {
     avgAmpClusterDTW[resultatPamDTW[i]] <-
       avgAmpClusterDTW[resultatPamDTW[i]] + dtw_basic(queryRef,
@@ -380,6 +385,7 @@ for (i in 1:nbclusterDTW) {
   Q3 <- NULL
   df_selected <- summaryDTW[[i]]
   df_clust <- dfPAMDTW[[i]]
+  if(length(df_clust)!=queryTaille){
   for (j in 1:queryTaille) {
     Q1 <- c(Q1, quantile(df_clust[, j], 0.25))
     med <- c(med, quantile(df_clust[, j], 0.5))
@@ -390,7 +396,21 @@ for (i in 1:nbclusterDTW) {
   df_selected <- cbind(df_selected, med)
   df_selected <- cbind(df_selected, Q3)
   summaryDTW[[i]] <- df_selected
-}
+  }else{
+    Q1 <- df_clust[1:queryTaille]
+    med <- df_clust[1:queryTaille]
+    Q3 <- df_clust[1:queryTaille]
+    df_selected <-
+      cbind(df_selected, queryRef)
+    df_selected <-
+      cbind(df_selected, Q1)
+    df_selected <-
+      cbind(df_selected, med)
+    df_selected <-
+      cbind(df_selected, Q3)
+    summaryDTW[[i]] <- df_selected
+  }
+  }
 
 for (i in 1:nbclusterSDTW) {
   Q1 <- NULL
@@ -398,16 +418,38 @@ for (i in 1:nbclusterSDTW) {
   Q3 <- NULL
   df_selected <- summarySDTW[[i]]
   df_clust <- dfPAMSDTW[[i]]
-  for (j in 1:queryTaille) {
-    Q1 <- c(Q1, quantile(df_clust[, j], 0.25))
-    med <- c(med, quantile(df_clust[, j], 0.5))
-    Q3 <- c(Q3, quantile(df_clust[, j], 0.75))
+  if(length(df_clust)!=queryTaille){
+    for (j in 1:queryTaille) {
+      Q1 <- c(Q1, quantile(df_clust[, j], 0.25))
+      med <-
+        c(med, quantile(df_clust[, j], 0.5))
+      Q3 <-
+        c(Q3, quantile(df_clust[, j], 0.75))
+    }
+    df_selected <-
+      cbind(df_selected, queryRef)
+    df_selected <-
+      cbind(df_selected, Q1)
+    df_selected <-
+      cbind(df_selected, med)
+    df_selected <-
+      cbind(df_selected, Q3)
+    summarySDTW[[i]] <- df_selected
+  }else{
+    Q1 <- df_clust[1:queryTaille]
+    med <- df_clust[1:queryTaille]
+    Q3 <- df_clust[1:queryTaille]
+    df_selected <-
+      cbind(df_selected, queryRef)
+    df_selected <-
+      cbind(df_selected, Q1)
+    df_selected <-
+      cbind(df_selected, med)
+    df_selected <-
+      cbind(df_selected, Q3)
+    summarySDTW[[i]] <- df_selected
   }
-  df_selected <- cbind(df_selected, queryRef)
-  df_selected <- cbind(df_selected, Q1)
-  df_selected <- cbind(df_selected, med)
-  df_selected <- cbind(df_selected, Q3)
-  summarySDTW[[i]] <- df_selected
+  
 }
 
 plotPAMDTW <- list()
@@ -458,18 +500,18 @@ repC5DTW <-
 repC5SDTW <-
   data.frame("repRef" = google[gapStart:(gapStart + gapTaille - 1)])
 
-for (i in 1:length(reponseVialbe)) {
+for (i in 1:length(reponseViable)) {
   if (resultatPamDTW[i] == which.min(avgClusterDTW)) {
-    repC1DTW <- cbind(repC1DTW, reponseVialbe[, i])
+    repC1DTW <- cbind(repC1DTW, reponseViable[, i])
   }
   if (resultatPamSDTW[i] == which.min(avgClusterSDTW)) {
-    repC1SDTW <- cbind(repC1SDTW, reponseVialbe[, i])
+    repC1SDTW <- cbind(repC1SDTW, reponseViable[, i])
   }
   if (resultatPamDTW[i] == which.min(avgAmpClusterDTW)) {
-    repC5DTW <- cbind(repC5DTW, reponseVialbe[, i])
+    repC5DTW <- cbind(repC5DTW, reponseViable[, i])
   }
   if (resultatPamSDTW[i] == which.min(avgAmpClusterSDTW)) {
-    repC5SDTW <- cbind(repC5SDTW, reponseVialbe[, i])
+    repC5SDTW <- cbind(repC5SDTW, reponseViable[, i])
   }
 }
 repC1DTW <- subset(repC1DTW, select = -1)
