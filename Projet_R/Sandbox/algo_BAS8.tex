@@ -1,0 +1,40 @@
+\documentclass[french]{article}
+  \usepackage[ruled,lined]{algorithm2e}
+  \usepackage{babel}
+  \usepackage{setspace}
+\usepackage{geometry}
+ 
+\begin{document}
+
+\begin{algorithm}
+ \DontPrintSemicolon
+ \setstretch{1.25}
+ \caption{Chercher les fenêtres viables pour taille de query donnée}
+ 
+Initialisation Dataset "google" \;
+Initialisation variable gapTaille = 5 \;
+Initialisation variable gapStart = 400 \;
+\tcp{La fonction $gapCreation$ permet de créer un trou de la taille $gapTaille$ à la position $gapStart$ sur le Dataset $google$}
+Initialisation Dataset "googleModif" =  gapCreation(google, gapTaille / length(google), gapStart)\;
+Initialisation variable queryTaille = 10 \;
+Initialisation vector featureRef = 10 \;
+Initialisation vector queryRef = google[(gapStart - queryTaille):(gapStart - 1)] \;
+
+
+
+
+\;
+\;
+
+  \Tq{pas à la fin de la FAQ}{
+    l'utilisateur lit la section courante \;
+    \eSi{comprise}{
+      aller à la section suivante \;
+      la section courante devient cette dernière \;
+    }{
+      revenir au début de cette section \;
+    }
+  }
+\end{algorithm}
+
+\end{document}
