@@ -36,7 +36,7 @@ plot(google[0:2000], type = 'l')
 print("Chercher fenetre viable")
 tps <- system.time({
   gapTaille <- 7
-  gapStart <- 400
+  gapStart <- 350
   dataModif <-
     gapCreation(google, gapTaille / length(google), gapStart)$output_vector
   queryTaille <- 12
@@ -65,7 +65,7 @@ tps <- system.time({
   if (length(google) < 10000) {
     threshold_cos = 0.9995
   } else {
-    threshold_cos = 0.995
+    threshold_cos = 0.999995
   }
   
   while ((fin + queryTaille + gapTaille) < length(google)) {
@@ -81,7 +81,7 @@ tps <- system.time({
       
       if (!is.na(cosCompare) && cosCompare >= threshold_cos) {
         # print(debut)
-        # print(cosCompare)
+        print(cosCompare)
         fenetresViable <- cbind(fenetresViable,
                                 queryTemp)
         colnames(fenetresViable)[ncol(fenetresViable)] <-
