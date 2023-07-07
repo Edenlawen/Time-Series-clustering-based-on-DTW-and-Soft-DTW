@@ -23,8 +23,8 @@ tp <- system.time({
 # data("google")
 google <- datasets::co2
 
-gan <- read_csv("csv/generated_data.csv")
-google <- c(google,gan$`3.546236651554245327e+02`)
+gan <- read_csv("csv/generated_data_365.csv")
+google <- c(google,gan$`3.188603097845554544e+02`)
 # google <- gan$`3.546236651554245327e+02`
 
 # google <- read_csv("csv/df_filled_1W_730.csv")
