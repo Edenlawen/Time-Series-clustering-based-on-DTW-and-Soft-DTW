@@ -23,20 +23,20 @@ tp <- system.time({
 # data("google")
 google <- datasets::co2
 
-gan <- read_csv("csv/generated_data_850.csv")
+gan <- read_csv("csv/generated_data.csv")
 google <- c(google,gan$`3.546236651554245327e+02`)
 # google <- gan$`3.546236651554245327e+02`
 
 # google <- read_csv("csv/df_filled_1W_730.csv")
 # google <- google$Fluo_FFU[1:20000]
 
-plot(google, type = 'l')
+plot(google[0:2000], type = 'l')
 
 # Partie Chercher les fenêtres viables pour une taille de query donnée
 print("Chercher fenetre viable")
 tps <- system.time({
   gapTaille <- 7
-  gapStart <- 400i
+  gapStart <- 400
   dataModif <-
     gapCreation(google, gapTaille / length(google), gapStart)$output_vector
   queryTaille <- 12
