@@ -17,6 +17,8 @@ Note: Use original data as training set to generater synthetic data (time-series
 """
 
 # Necessary Packages
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import tensorflow as tf
 import numpy as np
 from utils import extract_time, rnn_cell, random_generator, batch_generator
@@ -94,10 +96,9 @@ def timegan (ori_data, parameters):
     """
     with tf.compat.v1.variable_scope("embedder", reuse = tf.compat.v1.AUTO_REUSE):
       e_cell = tf.keras.layers.StackedRNNCells([tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units = hidden_dim, name=module_name) for _ in range(num_layers)])
-      # e_outputs, e_last_states = tf.compat.v1.nn.dynamic_rnn(e_cell, X, dtype=tf.float32, sequence_length = T)
-      rnn_layers = tf.keras.layers.RNN(cell = e_cell, return_state=False, return_sequences=True)
-      # e_outputs, e_last_states = rnn_layers(X,None)
-      e_outputs = rnn_layers(X)
+      e_outputs, e_last_states = tf.compat.v1.nn.dynamic_rnn(e_cell, X, dtype=tf.float32, sequence_length = T)
+      # rnn_layers = tf.keras.layers.RNN(cell = e_cell, return_state=False, return_sequences=True)
+      # e_outputs = rnn_layers(X)
       H = tf.keras.layers.Dense(hidden_dim, activation='sigmoid')(e_outputs)     
     return H
       
@@ -113,9 +114,9 @@ def timegan (ori_data, parameters):
     """     
     with tf.compat.v1.variable_scope("recovery", reuse = tf.compat.v1.AUTO_REUSE): 
       r_cell = tf.keras.layers.StackedRNNCells([tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units = hidden_dim, name=module_name) for _ in range(num_layers)])
-      # r_outputs, r_last_states = tf.compat.v1.nn.dynamic_rnn(r_cell, H, dtype=tf.float32, sequence_length = T)
-      rnn_layers = tf.keras.layers.RNN(cell = r_cell, return_state=False, return_sequences=True)
-      r_outputs = rnn_layers(H)
+      r_outputs, r_last_states = tf.compat.v1.nn.dynamic_rnn(r_cell, H, dtype=tf.float32, sequence_length = T)
+      # rnn_layers = tf.keras.layers.RNN(cell = r_cell, return_state=False, return_sequences=True)
+      # r_outputs = rnn_layers(H)
       X_tilde = tf.keras.layers.Dense(dim, activation='sigmoid')(r_outputs)   
     return X_tilde
     
@@ -131,9 +132,9 @@ def timegan (ori_data, parameters):
     """        
     with tf.compat.v1.variable_scope("generator", reuse = tf.compat.v1.AUTO_REUSE):
       e_cell = tf.keras.layers.StackedRNNCells([tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units = hidden_dim, name=module_name) for _ in range(num_layers)])
-      # e_outputs, e_last_states = tf.compat.v1.nn.dynamic_rnn(e_cell, Z, dtype=tf.float32, sequence_length = T)
-      rnn_layers = tf.keras.layers.RNN(cell = e_cell, return_state=False, return_sequences=True)
-      e_outputs = rnn_layers(Z)
+      e_outputs, e_last_states = tf.compat.v1.nn.dynamic_rnn(e_cell, Z, dtype=tf.float32, sequence_length = T)
+      # rnn_layers = tf.keras.layers.RNN(cell = e_cell, return_state=False, return_sequences=True)
+      # e_outputs = rnn_layers(Z)
       E = tf.keras.layers.Dense(hidden_dim, activation='sigmoid')(e_outputs)
     return E
       
@@ -149,9 +150,9 @@ def timegan (ori_data, parameters):
     """          
     with tf.compat.v1.variable_scope("supervisor", reuse = tf.compat.v1.AUTO_REUSE):
       e_cell = tf.keras.layers.StackedRNNCells([tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units = hidden_dim, name=module_name) for _ in range(num_layers-1)])
-      # e_outputs, e_last_states = tf.compat.v1.nn.dynamic_rnn(e_cell, H, dtype=tf.float32, sequence_length = T)
-      rnn_layers = tf.keras.layers.RNN(cell = e_cell, return_state=False, return_sequences=True)
-      e_outputs = rnn_layers(H)
+      e_outputs, e_last_states = tf.compat.v1.nn.dynamic_rnn(e_cell, H, dtype=tf.float32, sequence_length = T)
+      # rnn_layers = tf.keras.layers.RNN(cell = e_cell, return_state=False, return_sequences=True)
+      # e_outputs = rnn_layers(H)
       S = tf.keras.layers.Dense(hidden_dim, activation='sigmoid')(e_outputs)      
     return S
           
@@ -167,9 +168,9 @@ def timegan (ori_data, parameters):
     """        
     with tf.compat.v1.variable_scope("discriminator", reuse = tf.compat.v1.AUTO_REUSE):
       d_cell = tf.keras.layers.StackedRNNCells([tf.compat.v1.nn.rnn_cell.BasicRNNCell(num_units = hidden_dim, name=module_name) for _ in range(num_layers)])
-      # d_outputs, d_last_states = tf.compat.v1.nn.dynamic_rnn(d_cell, H, dtype=tf.float32, sequence_length = T)
-      rnn_layers = tf.keras.layers.RNN(cell = d_cell, return_state=False, return_sequences=True)
-      d_outputs = rnn_layers(Z)
+      d_outputs, d_last_states = tf.compat.v1.nn.dynamic_rnn(d_cell, H, dtype=tf.float32, sequence_length = T)
+      # rnn_layers = tf.keras.layers.RNN(cell = d_cell, return_state=False, return_sequences=True)
+      # d_outputs = rnn_layers(Z)
       Y_hat = tf.keras.layers.Dense(1, activation = None)(d_outputs)   
     return Y_hat   
     
