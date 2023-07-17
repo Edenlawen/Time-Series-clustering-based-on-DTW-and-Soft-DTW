@@ -20,20 +20,16 @@ source("R_function/EC_completion.r")
 source("R_function/globalF.r")
 source("R_function/compute.erreurRMSE.r")
 
-resfin <- avgClusterDTW <- rep(0, times = 2)
-
 tp <- system.time({
   # data("google")
   google <- datasets::co2
   
-  gan <- read_csv("csv/generated_data_365.csv")
-  google <- c(google, gan$`3.188603097845554544e+02`)
+  # gan <- read_csv("csv/generated_data_365.csv")
+  # google <- c(google, gan$`3.188603097845554544e+02`)
   # google <- gan$`3.546236651554245327e+02`
   
   # google <- read_csv("csv/df_filled_1W_730.csv")
   # google <- google$Fluo_FFU[1:20000]
-  
-  plot(google[0:5000], type = 'l')
   
   # Partie Chercher les fenêtres viables pour une taille de query donnée
   print("Chercher fenetre viable")

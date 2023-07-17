@@ -1,4 +1,4 @@
-"""Time-series Generative Adversarial Networks (TimeGAN) Codebase.
+"""Modified code from Time-series Generative Adversarial Networks (TimeGAN) Codebase.
 
 Reference: Jinsung Yoon, Daniel Jarrett, Mihaela van der Schaar, 
 "Time-series Generative Adversarial Networks," 
@@ -42,24 +42,23 @@ def real_data_loading(array, seq_len):
     Args:
       - array: array
       - seq_len: sequence length
-      
+
     Returns:
       - data: preprocessed data.
       - max: The maximum value
       - min: The minimum value
     """
-    ori_data = array
 
-    max = np.max(ori_data)
-    min = np.min(ori_data)
+    max = np.max(array)
+    min = np.min(array)
     # Normalize the data
-    ori_data = MinMaxScaler(ori_data)
+    array = MinMaxScaler(array)
 
     # Preprocess the dataset
     temp_data = []
     # Cut data by sequence length
-    for i in range(0, len(ori_data) - seq_len):
-        _x = ori_data[i:i + seq_len]
+    for i in range(0, len(array) - seq_len):
+        _x = array[i:i + seq_len]
         temp_data.append(_x)
 
     # Mix the datasets (to make it similar to i.i.d)
@@ -67,5 +66,7 @@ def real_data_loading(array, seq_len):
     data = []
     for i in range(len(temp_data)):
         data.append(temp_data[idx[i]])
+    
+    data = np.array(data)
 
     return data, max, min
