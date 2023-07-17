@@ -177,12 +177,6 @@ tp <- system.time({
   # Partie PAM (K-medois)
   print("Début de la partie PAM")
   
-  if (length(fenetresViable) < 25) {
-    kmax <- length(fenetresViable) - 1
-  } else{
-    kmax <- 25
-  }
-  
   nbclusterDTW <-
     fviz_nbclust(
       t(fenetresViable),
