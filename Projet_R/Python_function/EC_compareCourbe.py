@@ -1,9 +1,11 @@
 import numpy as np
 
+
 def compute_similariteAire(courbe1, courbe2):
     simi = np.sum(1 / (1 + (courbe1 - courbe2) ** 2))
     simi /= len(courbe1)
     return simi
+
 
 def compute_Rcorrelation(courbe1, courbe2, verbose=False):
     R = np.corrcoef(courbe2, courbe1)[0, 1]
@@ -14,9 +16,11 @@ def compute_Rcorrelation(courbe1, courbe2, verbose=False):
             print("not acceptable model R^2<0.9")
     return R ** 2
 
+
 def compute_distMaxi(courbe1, courbe2):
     dMax = np.max(np.abs(courbe2 - courbe1))
     return dMax
+
 
 def compute_erreurFA2(courbe1, courbe2, verbose=False):
     ratio = courbe2 / courbe1
@@ -29,6 +33,7 @@ def compute_erreurFA2(courbe1, courbe2, verbose=False):
             print("important number of different point")
     return FA2
 
+
 def compute_erreurFB(courbe1, courbe2, verbose=False):
     m1 = np.mean(courbe1)
     m2 = np.mean(courbe2)
@@ -39,6 +44,7 @@ def compute_erreurFB(courbe1, courbe2, verbose=False):
         else:
             print("non acceptable FB")
     return FB
+
 
 def compute_erreurFS(courbe1, courbe2, verbose=False):
     sd1 = np.std(courbe1)
@@ -52,6 +58,7 @@ def compute_erreurFS(courbe1, courbe2, verbose=False):
         else:
             print("non acceptable FS")
     return FS
+
 
 def compute_erreurMG(courbe1, courbe2, verbose=False):
     N = len(courbe1)
@@ -67,6 +74,7 @@ def compute_erreurMG(courbe1, courbe2, verbose=False):
             print("non acceptable MG error")
     return res
 
+
 def compute_erreurNMSE(courbe1, courbe2, verbose=False):
     N = len(courbe1)
     Dif = np.mean((courbe1 - courbe2) ** 2)
@@ -80,6 +88,7 @@ def compute_erreurNMSE(courbe1, courbe2, verbose=False):
             print("non acceptable NMSE error")
     return res
 
+
 def compute_erreurqn(courbe1, courbe2, verbose=False):
     N = len(courbe1)
     aire1 = np.sum((courbe1 - courbe2) ** 2)
@@ -91,6 +100,7 @@ def compute_erreurqn(courbe1, courbe2, verbose=False):
         else:
             print("non acceptable NMSE_O error")
     return simi
+
 
 def compute_erreurVG(courbe1, courbe2, verbose=False):
     N = len(courbe1)
@@ -105,6 +115,7 @@ def compute_erreurVG(courbe1, courbe2, verbose=False):
         else:
             print("non acceptable VG error")
     return res
+
 
 def compute_indicateurComp(courbe1, courbe2, par_R2=0.7, par_FA2=0.8, par_FB=0.3, par_FS=0.05, par_NMSE=0.4,
                            par_simAire=0.95, par_MGmin=0.75, par_MGmax=1.25, v=False):
