@@ -28,17 +28,18 @@ def TimeWarp(data, nbpts, seq_len, condition, verbose=False):
     x_train, max, min = real_data_loading(data, (len(data)-1))
     denoR = x_train[0] * (max - min) + min
     denoR = np.expand_dims(denoR, 1)
-    x_train = np.expand_dims(x_train[0,:int(seq_len)], 0)
+    x_train = np.expand_dims(x_train[0, :int(seq_len)], 0)
     x_train = np.expand_dims(x_train, 2)
-    
+
     if verbose:
         print("End of preprocess")
 
     array = np.empty((1,), dtype=np.object).reshape((1, 1))
-    
+
     array = np.append(array, denoR, axis=0)
 
     i = 0
+    compt = 0
     while (len(array) < nbpts+len(data)-1):
         if (verbose and i % 1000 == 0):
             print(i)
@@ -48,6 +49,8 @@ def TimeWarp(data, nbpts, seq_len, condition, verbose=False):
         if (res >= condition):
             if verbose:
                 print("New array found")
+                compt += seq_len
+                print(str((compt*100)/nbpts) + "%")
             denoR = time_warp * (max - min) + min
             denoR.flatten()
             array = np.append(array, denoR, axis=0)

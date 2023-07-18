@@ -24,11 +24,11 @@ source("R_function/compute.DistanceMatrix.r")
 
 set.seed(NULL)
 
-# data("google")
-google <- datasets::co2
-google <- unlist(TimeWarp(
-  data = r_to_py(google),
-  nbpts = 10000,
+
+donnee <- datasets::co2
+donnee <- unlist(TimeWarp(
+  data = r_to_py(donnee),
+  nbpts = 2000000,
   seq_len = 467,
   condition = 8,
   verbose = FALSE
@@ -40,41 +40,38 @@ tps <- system.time({
   gapTaille <- 7
   gapStart <- 400
   dataModif <-
-    gapCreation(google, gapTaille / length(google), gapStart)$output_vector
+    gapCreation(donnee, gapTaille / length(donnee), gapStart)$output_vector
   queryTaille <- 12
   featureRef <-
     globalfeatures(dataModif[(gapStart - queryTaille):(gapStart - 1)])
   queryRef <- dataModif[(gapStart - queryTaille):(gapStart - 1)]
   fenetresViable <- data.frame("queryRef" = queryRef)
-  repRef <- google[gapStart:(gapStart + gapTaille - 1)]
+  repRef <- donnee[gapStart:(gapStart + gapTaille - 1)]
   reponseViable <- data.frame("repRef" = repRef)
   debut <- 1
   fin <- debut + queryTaille
   
-  if (length(google) < 1000) {
-    step_threshold <- 2
-    stepBase <- 2
+  if (length(donnee) < 1000) {
+    borne_a <- 1
+    borne_b <- 2
+    step_threshold <- sample(borne_a:borne_b,1)
   } else{
-    if (length(google) > 10000) {
-      step_threshold <-  50
-      stepBase <- 50
+    if (length(donnee) > 10000) {
+      borne_a <- 11
+      borne_b <- 50
+      step_threshold <- sample(borne_a:borne_b,1)
     } else{
-      step_threshold <-  10
-      stepBase <- 10
+      borne_a <- 3
+      borne_b <- 10
+      step_threshold <- sample(borne_a:borne_b,1)
     }
   }
   
-  if (length(google) < 10000) {
-    threshold_cos <-  0.9995
-  } else {
-    threshold_cos <-  0.99995
-  }
-  
+  step_threshold <- 50
   threshold_cos <- 0.95
   puiss <- 3
   
-  # while (((fin + queryTaille + gapTaille) < length(google)) &&  length(fenetresViable) < 140) {
-  while (((fin + queryTaille + gapTaille) < length(google))) {
+  while (((fin + queryTaille + gapTaille) < length(donnee))) {
     if (!(
       debut %in% seq(
         gapStart - queryTaille - queryTaille,
@@ -97,29 +94,17 @@ tps <- system.time({
           paste0("Debut = ", debut)
       }
     }
-    # step_threshold <- sample(11:50,1)
+    # step_threshold <- sample(borne_a:borne_b,1)
     debut <- debut + step_threshold
     fin <- fin + step_threshold
     
-    if ((fin + queryTaille + gapTaille) >= length(google)) {
-      if (length(fenetresViable) > 1000) {
-        # if (step_threshold == 1) {
-        #   threshold_cos <- 0.95
-        #   step_threshold <- stepBase
-        # }
+    if ((fin + queryTaille + gapTaille) >= length(donnee)) {
+      if (length(fenetresViable) > 200) {
         debut <- 1
         fin <- debut + queryTaille
         threshold_cos <- threshold_cos + (45 * (10 ^ (-puiss)))
         puiss <- puiss + 1
         print(threshold_cos)
-        # step_threshold <-
-        #   step_threshold - floor(step_threshold / 2)
-        # print(
-        #   paste0(
-        #     "Pas assez de fenetre viable, votre step_threshold est passé à ",
-        #     step_threshold
-        #   )
-        # )
         rm(fenetresViable, reponseViable)
         fenetresViable <- data.frame("queryRef" = queryRef)
         reponseViable <- data.frame("repRef" = repRef)
@@ -144,25 +129,8 @@ tps <- system.time({
   g = 0.001
   print(length(fenetresViable))
   
-  # matriceDTW <- compute.DistanceMatrixDTW(fenetresViable)
-  matriceDTW <-
-    proxy::dist(
-      t(fenetresViable),
-      method = "dtw_basic",
-      upper = FALSE,
-      diag = FALSE
-    )
-  # matriceSDTW <- compute.DistanceMatrixSDTW(fenetresViable, g)
-  matriceSDTW <-
-    proxy::dist(
-      t(fenetresViable),
-      method = "sdtw",
-      gamma = g,
-      upper = FALSE,
-      diag = TRUE
-    )
-  # write.csv(matriceDTW, file = "csv/matriceDTW.csv", row.names = FALSE)
-  # write.csv(matriceSDTW, file = "csvmatriceSDTW.csv", row.names = FALSE)
+  matriceDTW <- compute.DistanceMatrixDTW(fenetresViable)
+  matriceSDTW <- compute.DistanceMatrixSDTW(fenetresViable, g)
 })
 tps <- tps["elapsed"]
 print(paste("Les temps pour le calcul des matrice est de ", tps, "secondes"))
@@ -544,19 +512,19 @@ print("Fin de la partie PAM")
 
 # Partie affichage courbe dans le trou
 repC1DTW <-
-  data.frame("repRef" = google[gapStart:(gapStart + gapTaille - 1)])
+  data.frame("repRef" = donnee[gapStart:(gapStart + gapTaille - 1)])
 repC1SDTW <-
-  data.frame("repRef" = google[gapStart:(gapStart + gapTaille - 1)])
+  data.frame("repRef" = donnee[gapStart:(gapStart + gapTaille - 1)])
 
 repC4DTW <-
-  data.frame("repRef" = google[gapStart:(gapStart + gapTaille - 1)])
+  data.frame("repRef" = donnee[gapStart:(gapStart + gapTaille - 1)])
 repC4SDTW <-
-  data.frame("repRef" = google[gapStart:(gapStart + gapTaille - 1)])
+  data.frame("repRef" = donnee[gapStart:(gapStart + gapTaille - 1)])
 
 repC5DTW <-
-  data.frame("repRef" = google[gapStart:(gapStart + gapTaille - 1)])
+  data.frame("repRef" = donnee[gapStart:(gapStart + gapTaille - 1)])
 repC5SDTW <-
-  data.frame("repRef" = google[gapStart:(gapStart + gapTaille - 1)])
+  data.frame("repRef" = donnee[gapStart:(gapStart + gapTaille - 1)])
 
 for (i in 1:length(reponseViable)) {
   if (resultatPamDTW[i] == which.min(avgClusterDTW)) {
@@ -617,22 +585,22 @@ for (i in 1:gapTaille) {
     c(medRepC5SDTW, quantile(repC5SDTW[, i], 0.5))
 }
 
-# medRepC1DTW <- medRepC1DTW + (google[gapStart-1] - medRepC1DTW[1])
+# medRepC1DTW <- medRepC1DTW + (donnee[gapStart-1] - medRepC1DTW[1])
 # medRepC1SDTW <-
-#   medRepC1SDTW + (google[gapStart-1] - medRepC1SDTW[1])
+#   medRepC1SDTW + (donnee[gapStart-1] - medRepC1SDTW[1])
 #
-# medRepC4DTW <- medRepC4DTW + (google[gapStart-1] - medRepC4DTW[1])
+# medRepC4DTW <- medRepC4DTW + (donnee[gapStart-1] - medRepC4DTW[1])
 # medRepC4SDTW <-
-#   medRepC4SDTW + (google[gapStart-1] - medRepC4SDTW[1])
+#   medRepC4SDTW + (donnee[gapStart-1] - medRepC4SDTW[1])
 #
-# medRepC5DTW <- medRepC5DTW + (google[gapStart-1] - medRepC5DTW[1])
+# medRepC5DTW <- medRepC5DTW + (donnee[gapStart-1] - medRepC5DTW[1])
 # medRepC5SDTW <-
-#   medRepC5SDTW + (google[gapStart-1] - medRepC5SDTW[1])
+#   medRepC5SDTW + (donnee[gapStart-1] - medRepC5SDTW[1])
 
 df <-
   data.frame(
     "index" = 1:length(medRepC1DTW),
-    "main" = google[gapStart:(gapStart + gapTaille - 1)],
+    "main" = donnee[gapStart:(gapStart + gapTaille - 1)],
     "medC1DTW" = medRepC1DTW,
     "medC1SDTW" = medRepC1SDTW,
     "medC4DTW" = medRepC4DTW,
