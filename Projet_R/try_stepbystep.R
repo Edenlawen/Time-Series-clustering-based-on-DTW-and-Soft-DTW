@@ -1,5 +1,6 @@
 # Library
 library(reticulate)
+library(readr)
 
 rm(list = ls())
 #-------------------------------------------------------------------------------
@@ -12,10 +13,10 @@ source_python("Python_function/TimeWarp.py")
 rep <-
   TimeWarp(
     data = dataset,
-    nbpts = 300,
-    seq_len = 300,
-    condition = 7,
-    verbose = TRUE
+    nbpts = 50000,
+    seq_len = 467,
+    condition = 8,
+    verbose = FALSE
   )
 
 rep <- unlist(rep)
@@ -24,6 +25,9 @@ plot(rep,type = "l")
 
 #-------------------------------------------------------------------------------
 # Finding Feasible Windows
+for (i in 1:25) {
+  print(sample(1:10,1))
+}
 
 
 #-------------------------------------------------------------------------------

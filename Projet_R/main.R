@@ -5,7 +5,6 @@ library(ggplot2)
 library(gridExtra)
 library(cluster)
 library(factoextra)
-library(kneedle)
 library(dtwclust)
 library(htmlwidgets)
 library(plotly)
@@ -13,20 +12,19 @@ library(tidyr)
 library(reshape2)
 library(tidyverse)
 
-rm(list = ls())
+# rm(list = ls())
 
 source("R_function/EC_completion.r")
 # source("R_function/EC_compareCourbe.r")
 source("R_function/globalF.r")
 source("R_function/compute.erreurRMSE.r")
 
+set.seed(NULL)
+
 tp <- system.time({
   # data("google")
-  google <- datasets::co2
-  
-  # gan <- read_csv("csv/generated_data_365.csv")
-  # google <- c(google, gan$`3.188603097845554544e+02`)
-  # google <- gan$`3.546236651554245327e+02`
+  # google <- datasets::co2
+  google <- rep
   
   # google <- read_csv("csv/df_filled_1W_730.csv")
   # google <- google$Fluo_FFU[1:20000]
@@ -49,25 +47,30 @@ tp <- system.time({
     fin <- debut + queryTaille
     
     if (length(google) < 1000) {
-      step_threshold = 2
+      step_threshold <- 2
       stepBase <- 2
     } else{
       if (length(google) > 10000) {
-        step_threshold = 50
+        step_threshold <-  50
         stepBase <- 50
       } else{
-        step_threshold = 10
+        step_threshold <-  10
         stepBase <- 10
       }
     }
     
     if (length(google) < 10000) {
-      threshold_cos = 0.9995
+      threshold_cos <-  0.9995
     } else {
-      threshold_cos = 0.999995
+      threshold_cos <-  0.99995
     }
     
-    while ((fin + queryTaille + gapTaille) < length(google)) {
+    step_threshold <-  1
+    threshold_cos <- 0.95
+    puiss <- 3
+    
+    # while (((fin + queryTaille + gapTaille) < length(google)) &&  length(fenetresViable) < 140) {
+    while (((fin + queryTaille + gapTaille) < length(google))) {
       if (!(
         debut %in% seq(
           gapStart - queryTaille - queryTaille,
@@ -92,25 +95,29 @@ tp <- system.time({
             paste0("Debut = ", debut)
         }
       }
+      # step_threshold <- sample(11:50,1)
       debut <- debut + step_threshold
       fin <- fin + step_threshold
       
-      if (fin >= length(google)) {
-        if (length(fenetresViable) < 200) {
-          if (step_threshold == 1) {
-            threshold_cos <- 0.95
-            step_threshold <- stepBase
-          }
+      if ((fin + queryTaille + gapTaille) >= length(google)) {
+        if (length(fenetresViable) > 250) {
+          # if (step_threshold == 1) {
+          #   threshold_cos <- 0.95
+          #   step_threshold <- stepBase
+          # }
           debut <- 1
           fin <- debut + queryTaille
-          step_threshold <-
-            step_threshold - floor(step_threshold / 2)
-          print(
-            paste0(
-              "Pas assez de fenetre viable, votre step_threshold est passé à ",
-              step_threshold
-            )
-          )
+          threshold_cos <- threshold_cos + (45 * (10^(-puiss)))
+          puiss <- puiss+1
+          print(threshold_cos)
+          # step_threshold <-
+          #   step_threshold - floor(step_threshold / 2)
+          # print(
+          #   paste0(
+          #     "Pas assez de fenetre viable, votre step_threshold est passé à ",
+          #     step_threshold
+          #   )
+          # )
           rm(fenetresViable, reponseViable)
           fenetresViable <- data.frame("queryRef" = queryRef)
           reponseViable <- data.frame("repRef" = repRef)
@@ -179,7 +186,6 @@ tp <- system.time({
       pam,
       diss = matriceDTW,
       method = "silhouette",
-      k.max = kmax
     )
   nbclusterDTW <- nbclusterDTW$data$y
   nbclusterDTW <- which.max(nbclusterDTW)
@@ -189,7 +195,6 @@ tp <- system.time({
       pam,
       diss = matriceSDTW,
       method = "silhouette",
-      k.max = kmax
     )
   nbclusterSDTW <- nbclusterSDTW$data$y
   nbclusterSDTW <- which.max(nbclusterSDTW)
@@ -614,6 +619,18 @@ tp <- system.time({
     medRepC5SDTW <-
       c(medRepC5SDTW, quantile(repC5SDTW[, i], 0.5))
   }
+
+  # medRepC1DTW <- medRepC1DTW + (google[gapStart-1] - medRepC1DTW[1])
+  # medRepC1SDTW <-
+  #   medRepC1SDTW + (google[gapStart-1] - medRepC1SDTW[1])
+  # 
+  # medRepC4DTW <- medRepC4DTW + (google[gapStart-1] - medRepC4DTW[1])
+  # medRepC4SDTW <-
+  #   medRepC4SDTW + (google[gapStart-1] - medRepC4SDTW[1])
+  # 
+  # medRepC5DTW <- medRepC5DTW + (google[gapStart-1] - medRepC5DTW[1])
+  # medRepC5SDTW <-
+  #   medRepC5SDTW + (google[gapStart-1] - medRepC5SDTW[1])
   
   df <-
     data.frame(

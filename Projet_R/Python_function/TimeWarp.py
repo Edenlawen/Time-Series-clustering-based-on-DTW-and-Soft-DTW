@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import os
 import utils.augmentation as aug
@@ -27,8 +28,8 @@ def TimeWarp(data, nbpts, seq_len, condition, verbose=False):
     x_train, max, min = real_data_loading(data, (len(data)-1))
     denoR = x_train[0] * (max - min) + min
     denoR = np.expand_dims(denoR, 1)
-    x_train = np.expand_dims(x_train[:int(seq_len)], 2)
-    print(x_train.shape)
+    x_train = np.expand_dims(x_train[0,:int(seq_len)], 0)
+    x_train = np.expand_dims(x_train, 2)
     
     if verbose:
         print("End of preprocess")
@@ -47,8 +48,6 @@ def TimeWarp(data, nbpts, seq_len, condition, verbose=False):
         if (res >= condition):
             if verbose:
                 print("New array found")
-                print(time_warp.shape)
-                print(compute_indicateurComp(x_train[0], time_warp))
             denoR = time_warp * (max - min) + min
             denoR.flatten()
             array = np.append(array, denoR, axis=0)

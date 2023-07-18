@@ -282,7 +282,7 @@ compute.erreurVG <- function(courbe1, courbe2, verbose = F) {
 compute.indicateurComp <-
   function(courbe1,
            courbe2,
-           par.R2 = 0.7,
+           par.R2 = 0.9,
            par.FA2 = 0.8,
            par.FB = 0.3,
            par.FS = 0.05,

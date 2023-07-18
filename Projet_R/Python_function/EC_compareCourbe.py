@@ -1,15 +1,20 @@
 import numpy as np
 
-def compute_similariteAire(courbe1, courbe2):
+def compute_similariteAire(courbe1, courbe2, verbose=False):
     simi = np.sum(1 / (1 + (courbe1 - courbe2) ** 2))
     simi /= len(courbe1)
+    if verbose:
+        if simi > 0.95:
+            print("acceptable model SimAire")
+        else:
+            print("not acceptable model Simaire")
     return simi
 
 def compute_Rcorrelation(courbe1, courbe2, verbose=False):
     R = abs(np.corrcoef(courbe2, courbe1)[0, 1])
     if verbose:
         if R ** 2 > 0.9 and R < 0.05:
-            print("acceptable model")
+            print("acceptable model R^2")
         else:
             print("not acceptable model R^2<0.9")
     return R ** 2
@@ -26,7 +31,7 @@ def compute_erreurFA2(courbe1, courbe2, verbose=False):
         if FA2 > 0.8:
             print("good model FA2")
         else:
-            print("important number of different point")
+            print("important number of different point FA2")
     return FA2
 
 def compute_erreurFB(courbe1, courbe2, verbose=False):
@@ -106,12 +111,20 @@ def compute_erreurVG(courbe1, courbe2, verbose=False):
             print("non acceptable VG error")
     return res
 
-def compute_indicateurComp(courbe1, courbe2, par_R2=0.7, par_FA2=0.8, par_FB=0.3, par_FS=0.05,
+def compute_indicateurComp(courbe1, courbe2, par_R2=0.9, par_FA2=0.8, par_FB=0.3, par_FS=0.05,
                            par_NMSE=0.4, par_simAire=0.95, par_MGmin=0.75, par_MGmax=1.25, v=False):
     mini = min(np.min(courbe1), np.min(courbe2))
-    if mini < 0:
-        courbe1 += abs(mini)
-        courbe2 += abs(mini)
+    if mini <= 0:
+        if mini == 0:
+            courbe1 += 0.000001
+            courbe2 += 0.000001
+        else:
+            courbe1 += abs(mini)
+            courbe2 += abs(mini)
+        
+    courbe1=courbe1.squeeze()
+    courbe2=courbe2.squeeze()
+        
     res = {}
     res["R2"] = compute_Rcorrelation(courbe1, courbe2, verbose=v)
     res["FA2"] = compute_erreurFA2(courbe1, courbe2, verbose=v)
@@ -121,7 +134,7 @@ def compute_indicateurComp(courbe1, courbe2, par_R2=0.7, par_FA2=0.8, par_FB=0.3
     res["NMSE_O"] = compute_erreurqn(courbe1, courbe2, verbose=v)
     res["MG"] = compute_erreurMG(courbe1, courbe2, verbose=v)
     res["VG"] = compute_erreurVG(courbe1, courbe2, verbose=v)
-    res["simAire"] = compute_similariteAire(courbe1, courbe2)
+    res["simAire"] = compute_similariteAire(courbe1, courbe2, verbose=v)
     res["distMax"] = compute_distMaxi(courbe1, courbe2)
     
     test = True
@@ -160,11 +173,7 @@ def compute_indicateurComp(courbe1, courbe2, par_R2=0.7, par_FA2=0.8, par_FB=0.3
         totT += 1
     else:
         totF += 1
-    if res["VG"] >= par_MGmin:
-        totT += 1
-    else:
-        totF += 1
-    if res["VG"] <= par_MGmax:
+    if res["VG"] >= par_MGmin and res["VG"] <= par_MGmax:
         totT += 1
     else:
         totF += 1
