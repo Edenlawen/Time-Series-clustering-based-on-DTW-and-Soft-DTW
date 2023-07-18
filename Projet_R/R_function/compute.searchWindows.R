@@ -1,5 +1,5 @@
 #' This program allows you to search for data windows similar to an input or specified data set.
-#' Author Merlin Roudier v17/07/2023
+#' Author Merlin Roudier v.../07/2023
 #' @param
 #' @return
 
