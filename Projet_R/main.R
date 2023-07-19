@@ -28,7 +28,7 @@ set.seed(NULL)
 donnee <- datasets::co2
 donnee <- unlist(TimeWarp(
   data = r_to_py(donnee),
-  nbpts = 2000000,
+  nbpts = 2000,
   seq_len = 467,
   condition = 8,
   verbose = FALSE
