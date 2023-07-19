@@ -22,17 +22,19 @@ source("R_function/compute.erreurRMSE.r")
 source_python("Python_function/TimeWarp.py")
 source("R_function/compute.DistanceMatrix.r")
 
-set.seed(NULL)
+set.seed(1)
 
 
 donnee <- datasets::co2
 donnee <- unlist(TimeWarp(
   data = r_to_py(donnee),
-  nbpts = 2000,
+  nbpts = 200000,
   seq_len = 467,
   condition = 8,
   verbose = FALSE
 ))
+
+plot(donnee, type = "l")
 
 # Partie Chercher les fenêtres viables pour une taille de query donnée
 print("Chercher fenetre viable")
@@ -54,22 +56,25 @@ tps <- system.time({
   if (length(donnee) < 1000) {
     borne_a <- 1
     borne_b <- 2
-    step_threshold <- sample(borne_a:borne_b,1)
+    step_threshold <- sample(borne_a:borne_b, 1)
   } else{
     if (length(donnee) > 10000) {
       borne_a <- 11
       borne_b <- 50
-      step_threshold <- sample(borne_a:borne_b,1)
+      step_threshold <- sample(borne_a:borne_b, 1)
     } else{
       borne_a <- 3
       borne_b <- 10
-      step_threshold <- sample(borne_a:borne_b,1)
+      step_threshold <- sample(borne_a:borne_b, 1)
     }
   }
   
-  step_threshold <- 50
+  # step_threshold <- 50
   threshold_cos <- 0.95
   puiss <- 3
+  
+  cos_score <- c()
+  deb_vect <- c()
   
   while (((fin + queryTaille + gapTaille) < length(donnee))) {
     if (!(
@@ -83,33 +88,42 @@ tps <- system.time({
       cosCompare <- abs(cosine(featureRef, featureTemp))
       
       if (!is.na(cosCompare) && cosCompare >= threshold_cos) {
-        fenetresViable <- cbind(fenetresViable,
-                                queryTemp)
-        colnames(fenetresViable)[ncol(fenetresViable)] <-
-          paste0("Debut = ", debut)
-        
-        repTemp <- dataModif[fin:(fin + gapTaille - 1)]
-        reponseViable <- cbind(reponseViable, repTemp)
-        colnames(reponseViable)[ncol(reponseViable)] <-
-          paste0("Debut = ", debut)
+        cos_score <- c(cos_score, cosCompare)
+        deb_vect <- c(deb_vect, debut)
       }
     }
-    # step_threshold <- sample(borne_a:borne_b,1)
+    step_threshold <- sample(borne_a:borne_b, 1)
     debut <- debut + step_threshold
-    fin <- fin + step_threshold
+    fin <- debut + queryTaille
     
     if ((fin + queryTaille + gapTaille) >= length(donnee)) {
-      if (length(fenetresViable) > 200) {
-        debut <- 1
-        fin <- debut + queryTaille
-        threshold_cos <- threshold_cos + (45 * (10 ^ (-puiss)))
-        puiss <- puiss + 1
-        print(threshold_cos)
-        rm(fenetresViable, reponseViable)
-        fenetresViable <- data.frame("queryRef" = queryRef)
-        reponseViable <- data.frame("repRef" = repRef)
+      if (length(cos_score) > 100) {
+        while (length(cos_score) > 100) {
+          threshold_cos <- threshold_cos + (45 * (10 ^ (-puiss)))
+          puiss <- puiss + 1
+          # print(threshold_cos)
+          critere <- function(x, y) {
+            x < y
+          }
+          cos_score <- cos_score[!critere(cos_score, threshold_cos)]
+          deb_vect <- deb_vect[!critere(cos_score, threshold_cos)]
+        }
       }
     }
+  }
+  for (i in 1:length(deb_vect)) {
+    print(deb_vect[i])
+    debut <- deb_vect[i]
+    fin <- debut + queryTaille
+    fenetresViable <- cbind(fenetresViable,
+                            queryTemp <- dataModif[debut:(fin - 1)])
+    colnames(fenetresViable)[ncol(fenetresViable)] <-
+      paste0("Debut = ", deb_vect[i])
+    
+    repTemp <- dataModif[fin:(fin + gapTaille - 1)]
+    reponseViable <- cbind(reponseViable, repTemp)
+    colnames(reponseViable)[ncol(reponseViable)] <-
+      paste0("Debut = ", deb_vect[i])
   }
   fenetresViable <- subset(fenetresViable, select = -1)
   reponseViable <- subset(reponseViable, select = -1)
@@ -570,8 +584,18 @@ medRepC4SDTW <- vector("numeric", length = 0)
 medRepC5DTW <- vector("numeric", length = 0)
 medRepC5SDTW <- vector("numeric", length = 0)
 
+avgRepC1DTW <- vector("numeric", length = 0)
+avgRepC1SDTW <- vector("numeric", length = 0)
+
+avgRepC4DTW <- vector("numeric", length = 0)
+avgRepC4SDTW <- vector("numeric", length = 0)
+
+avgRepC5DTW <- vector("numeric", length = 0)
+avgRepC5SDTW <- vector("numeric", length = 0)
+
 
 for (i in 1:gapTaille) {
+  # Median
   medRepC1DTW <- c(medRepC1DTW, quantile(repC1DTW[, i], 0.5))
   medRepC1SDTW <-
     c(medRepC1SDTW, quantile(repC1SDTW[, i], 0.5))
@@ -583,30 +607,53 @@ for (i in 1:gapTaille) {
   medRepC5DTW <- c(medRepC5DTW, quantile(repC5DTW[, i], 0.5))
   medRepC5SDTW <-
     c(medRepC5SDTW, quantile(repC5SDTW[, i], 0.5))
+  
+  # Average
+  
+  avgRepC1DTW <- c(avgRepC1DTW, mean(repC1DTW[, i]))
+  avgRepC1SDTW <-
+    c(avgRepC1SDTW, mean(repC1SDTW[, i]))
+  
+  avgRepC4DTW <- c(avgRepC4DTW, mean(repC5DTW[, i]))
+  avgRepC4SDTW <-
+    c(avgRepC4SDTW, mean(repC5SDTW[, i]))
+  
+  avgRepC5DTW <- c(avgRepC5DTW, mean(repC5DTW[, i]))
+  avgRepC5SDTW <-
+    c(avgRepC5SDTW, mean(repC5SDTW[, i]))
 }
 
-# medRepC1DTW <- medRepC1DTW + (donnee[gapStart-1] - medRepC1DTW[1])
+# medRepC1DTW <- medRepC1DTW + (donnee[gapStart - 1] - medRepC1DTW[1])
 # medRepC1SDTW <-
-#   medRepC1SDTW + (donnee[gapStart-1] - medRepC1SDTW[1])
-#
-# medRepC4DTW <- medRepC4DTW + (donnee[gapStart-1] - medRepC4DTW[1])
+#   medRepC1SDTW + (donnee[gapStart - 1] - medRepC1SDTW[1])
+# 
+# medRepC4DTW <- medRepC4DTW + (donnee[gapStart - 1] - medRepC4DTW[1])
 # medRepC4SDTW <-
-#   medRepC4SDTW + (donnee[gapStart-1] - medRepC4SDTW[1])
-#
-# medRepC5DTW <- medRepC5DTW + (donnee[gapStart-1] - medRepC5DTW[1])
+#   medRepC4SDTW + (donnee[gapStart - 1] - medRepC4SDTW[1])
+# 
+# medRepC5DTW <- medRepC5DTW + (donnee[gapStart - 1] - medRepC5DTW[1])
 # medRepC5SDTW <-
-#   medRepC5SDTW + (donnee[gapStart-1] - medRepC5SDTW[1])
+#   medRepC5SDTW + (donnee[gapStart - 1] - medRepC5SDTW[1])
 
 df <-
   data.frame(
     "index" = 1:length(medRepC1DTW),
     "main" = donnee[gapStart:(gapStart + gapTaille - 1)],
+    # Median
     "medC1DTW" = medRepC1DTW,
     "medC1SDTW" = medRepC1SDTW,
     "medC4DTW" = medRepC4DTW,
     "medC4SDTW" = medRepC4SDTW,
     "medC5DTW" = medRepC5DTW,
     "medC5SDTW" = medRepC5SDTW,
+    # Average
+    "avgC1DTW" = avgRepC1DTW,
+    "avgC1SDTW" = avgRepC1SDTW,
+    "avgC4DTW" = avgRepC4DTW,
+    "avgC4SDTW" = avgRepC4SDTW,
+    "avgC5DTW" = avgRepC5DTW,
+    "avgC5SDTW" = avgRepC5SDTW,
+    #DTWBI
     "DTWBI" = compute.DTWBI_QF(dataModif, 20, 0, queryTaille, verbose = FALSE)[gapStart:(gapStart +
                                                                                            gapTaille - 1)]
   )

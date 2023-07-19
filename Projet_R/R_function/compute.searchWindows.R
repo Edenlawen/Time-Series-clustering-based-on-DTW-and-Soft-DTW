@@ -3,47 +3,37 @@
 #' @param
 #' @return
 
-compute.searchWindowsWithGap <-
+compute.searchWindows <-
   function(data,
-           gapTaille,
-           gapStart,
-           queryTaille,
+           query,
            verbose = F) {
-    print("Chercher fenetre viable")
-    # gapTaille <- 7
-    # gapStart <- 400
-    dataModif <-
-      gapCreation(data, gapTaille / length(data), gapStart)$output_vector
-    # queryTaille <- 12
+    queryTaille <- len(query)
     featureRef <-
-      globalfeatures(dataModif[(gapStart - queryTaille):(gapStart - 1)])
-    queryRef <- dataModif[(gapStart - queryTaille):(gapStart - 1)]
-    fenetresViable <- data.frame("queryRef" = queryRef)
-    repRef <- data[gapStart:(gapStart + gapTaille - 1)]
-    reponseViable <- data.frame("repRef" = repRef)
+      globalfeatures(query)
+    fenetresViable <- data.frame("query" = query)
     debut <- 1
     fin <- debut + queryTaille
     
-    if (length(data) < 1000) {
-      step_threshold = 2
-      stepBase <- 2
+    if (length(donnee) < 1000) {
+      borne_a <- 1
+      borne_b <- 2
+      step_threshold <- sample(borne_a:borne_b, 1)
     } else{
-      if (length(data) > 10000) {
-        step_threshold = 50
-        stepBase <- 50
+      if (length(donnee) > 10000) {
+        borne_a <- 11
+        borne_b <- 50
+        step_threshold <- sample(borne_a:borne_b, 1)
       } else{
-        step_threshold = 10
-        stepBase <- 10
+        borne_a <- 3
+        borne_b <- 10
+        step_threshold <- sample(borne_a:borne_b, 1)
       }
     }
     
-    if (length(data) < 10000) {
-      threshold_cos = 0.9995
-    } else {
-      threshold_cos = 0.995
-    }
+    threshold_cos <- 0.95
+    puiss <- 3
     
-    while ((fin + queryTaille + gapTaille) < length(data)) {
+    while (((fin + queryTaille + gapTaille) < length(donnee))) {
       if (!(
         debut %in% seq(
           gapStart - queryTaille - queryTaille,
@@ -55,45 +45,29 @@ compute.searchWindowsWithGap <-
         cosCompare <- abs(cosine(featureRef, featureTemp))
         
         if (!is.na(cosCompare) && cosCompare >= threshold_cos) {
-          # print(debut)
-          # print(cosCompare)
           fenetresViable <- cbind(fenetresViable,
                                   queryTemp)
           colnames(fenetresViable)[ncol(fenetresViable)] <-
             paste0("Debut = ", debut)
-          
-          repTemp <- dataModif[fin:(fin + gapTaille - 1)]
-          reponseViable <- cbind(reponseViable, repTemp)
-          colnames(reponseViable)[ncol(reponseViable)] <-
-            paste0("Debut = ", debut)
         }
       }
+      step_threshold <- sample(borne_a:borne_b, 1)
       debut <- debut + step_threshold
       fin <- fin + step_threshold
       
-      if (fin >= length(data)) {
-        if (length(fenetresViable) < 200) {
-          if (step_threshold == 1) {
-            threshold_cos <- 0.95
-            step_threshold <- stepBase
-          }
+      if ((fin + queryTaille + gapTaille) >= length(donnee)) {
+        if (length(fenetresViable) > 150) {
           debut <- 1
           fin <- debut + queryTaille
-          step_threshold <-
-            step_threshold - floor(step_threshold / 2)
-          print(
-            paste0(
-              "Pas assez de fenetre viable, votre step_threshold est passé à ",
-              step_threshold
-            )
-          )
+          threshold_cos <- threshold_cos + (45 * (10 ^ (-puiss)))
+          puiss <- puiss + 1
+          if (verbose) {
+            print(threshold_cos)
+          }
           rm(fenetresViable, reponseViable)
-          fenetresViable <- data.frame("queryRef" = queryRef)
-          reponseViable <- data.frame("repRef" = repRef)
+          fenetresViable <- data.frame("query" = query)
         }
       }
     }
     fenetresViable <- subset(fenetresViable, select = -1)
-    reponseViable <- subset(reponseViable, select = -1)
-    
   }
