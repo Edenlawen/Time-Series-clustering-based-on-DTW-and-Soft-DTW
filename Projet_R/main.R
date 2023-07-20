@@ -25,16 +25,34 @@ source("R_function/compute.DistanceMatrix.r")
 set.seed(1)
 
 
-donnee <- datasets::co2
-donnee <- unlist(TimeWarp(
-  data = r_to_py(donnee),
-  nbpts = 200000,
-  seq_len = 467,
-  condition = 8,
-  verbose = FALSE
-))
+# donnee <- datasets::co2
+# donnee <- unlist(TimeWarp(
+#   data = r_to_py(donnee),
+#   nbpts = 2000,
+#   seq_len = 467,
+#   condition = 8,
+#   verbose = FALSE
+# ))
 
-plot(donnee, type = "l")
+dataset <- read_csv("csv/bochoiPhuLien.csv")
+dataset <- dataset[,-1]
+dataset <- as.vector(t(dataset))
+dataset <- na.omit(dataset)
+
+dataset <- r_to_py(dataset)
+
+rep <-
+  TimeWarp(
+    data = dataset,
+    nbpts = 50000,
+    seq_len = 681,
+    condition = 6,
+    verbose = FALSE
+  )
+
+donnee <- unlist(rep)
+
+# plot(donnee, type = "l")
 
 # Partie Chercher les fenêtres viables pour une taille de query donnée
 print("Chercher fenetre viable")
@@ -69,7 +87,7 @@ tps <- system.time({
     }
   }
   
-  # step_threshold <- 50
+  step_threshold <- 50
   threshold_cos <- 0.95
   puiss <- 3
   
@@ -92,13 +110,13 @@ tps <- system.time({
         deb_vect <- c(deb_vect, debut)
       }
     }
-    step_threshold <- sample(borne_a:borne_b, 1)
+    # step_threshold <- sample(borne_a:borne_b, 1)
     debut <- debut + step_threshold
     fin <- debut + queryTaille
     
     if ((fin + queryTaille + gapTaille) >= length(donnee)) {
-      if (length(cos_score) > 100) {
-        while (length(cos_score) > 100) {
+      if (length(cos_score) > 50) {
+        while (length(cos_score) > 50) {
           threshold_cos <- threshold_cos + (45 * (10 ^ (-puiss)))
           puiss <- puiss + 1
           # print(threshold_cos)
@@ -143,8 +161,8 @@ tps <- system.time({
   g = 0.001
   print(length(fenetresViable))
   
-  matriceDTW <- compute.DistanceMatrixDTW(fenetresViable)
-  matriceSDTW <- compute.DistanceMatrixSDTW(fenetresViable, g)
+  matriceDTW <- compute.DistanceMatrixDTW(fenetresViable,normalize = FALSE)
+  matriceSDTW <- compute.DistanceMatrixSDTW(fenetresViable, g, normalize = FALSE)
 })
 tps <- tps["elapsed"]
 print(paste("Les temps pour le calcul des matrice est de ", tps, "secondes"))
