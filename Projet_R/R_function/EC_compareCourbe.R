@@ -369,12 +369,7 @@ compute.indicateurComp <-
     } else{
       totF <- totF + 1
     }
-    if (res["VG"] >= par.MGmin) {
-      totT <- totT + 1
-    } else{
-      totF <- totF + 1
-    }
-    if (res["VG"] <= par.MGmax) {
+    if (res["VG"] >= par.MGmin && res["VG"] <= par.MGmax) {
       totT <- totT + 1
     } else{
       totF <- totF + 1

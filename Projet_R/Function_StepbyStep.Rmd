@@ -1,0 +1,77 @@
+# Library for R
+
+```{r}
+# Library
+library(reticulate)
+library(readr)
+library(ggplot2)
+library(plotly)
+library(tidyr)
+library(reshape2)
+library(tidyverse)
+
+rm(list = ls())
+```
+
+# Load Dataset
+
+```{r}
+dataset <- datasets::co2
+dataset <- r_to_py(dataset)
+```
+
+# TimeWarp
+
+Before the red line, find the original dataset
+
+```{r}
+source_python("Python_function/TimeWarp.py")
+
+rep <-
+  TimeWarp(
+    data = dataset,
+    nbpts = 50000,
+    seq_len = 467,
+    condition = 8,
+    verbose = FALSE
+  )
+
+rep <- unlist(rep)
+
+plot(rep, type = "l")
+abline(v = 467, col = "red", lwd = 3)
+```
+
+# Finding Feasible Windows
+
+```{r}
+source("R_function/compute.searchWindows.r")
+
+queryref <- rep[400:407]
+queryStart <- 400
+nbWindow <- 20000
+print(queryref)
+
+fenetresViable <- compute.searchWindows(rep, queryref, queryStart, nbWindow, random = FALSE, verbose = FALSE)
+print(fenetresViable)
+```
+
+# Calculation of DTW and Soft-DTW distance matrices
+
+```{r}
+source("R_function/compute.DistanceMatrix.r")
+
+infoMatrixDTW <- compute.DistanceMatrixDTW(fenetresViable)
+infoMatrixSDTW <- compute.DistanceMatrixSDTW(fenetresViable, 0.001)
+```
+
+# Clustering according to PAM
+
+```{r}
+source("R_function/compute.PAMClustering.r")
+
+PAMDTW <-
+  compute.PAMClustering(fenetresViable, infoMatrixDTW[[1]], queryRef = queryref, nbcluster = NULL)
+PAMSDTW <-
+  compute.PAMClustering(fenetresViable, infoMatrixSDTW[[1]], queryRef = queryref, nbcluster = NULL)
+```
