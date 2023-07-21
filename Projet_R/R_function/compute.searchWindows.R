@@ -151,7 +151,7 @@ compute.searchWindows <-
         step_threshold <- 1
       } else{
         if (length(data) > 1000000) {
-          step_threshold <- 20
+          step_threshold <- 10
         } else{
           step_threshold <- 5
         }

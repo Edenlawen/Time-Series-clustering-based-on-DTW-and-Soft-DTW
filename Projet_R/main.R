@@ -16,7 +16,7 @@ library(reticulate)
 rm(list = ls())
 
 source("R_function/EC_completion.r")
-# source("R_function/EC_compareCourbe.r")
+source("R_function/EC_compareCourbe.r")
 source("R_function/globalF.r")
 source("R_function/compute.erreurRMSE.r")
 source_python("Python_function/TimeWarp.py")
@@ -25,34 +25,33 @@ source("R_function/compute.DistanceMatrix.r")
 set.seed(1)
 
 
-# donnee <- datasets::co2
-# donnee <- unlist(TimeWarp(
-#   data = r_to_py(donnee),
-#   nbpts = 2000,
-#   seq_len = 467,
-#   condition = 8,
-#   verbose = FALSE
-# ))
+donnee <- datasets::co2
+donnee <- unlist(TimeWarp(
+  data = r_to_py(donnee),
+  nbpts = 500000,
+  seq_len = 467,
+  condition = 8,
+  verbose = FALSE
+))
 
-dataset <- read_csv("csv/bochoiPhuLien.csv")
-dataset <- dataset[,-1]
-dataset <- as.vector(t(dataset))
-dataset <- na.omit(dataset)
+# dataset <- read_csv("csv/bochoiPhuLien.csv")
+# dataset <- dataset[,-1]
+# dataset <- as.vector(t(dataset))
+# dataset <- na.omit(dataset)
+# 
+# dataset <- r_to_py(dataset)
+# 
+# rep <-
+#   TimeWarp(
+#     data = dataset,
+#     nbpts = 50000,
+#     seq_len = 681,
+#     condition = 6,
+#     verbose = FALSE
+#   )
+# donnee <- unlist(rep)
 
-dataset <- r_to_py(dataset)
-
-rep <-
-  TimeWarp(
-    data = dataset,
-    nbpts = 50000,
-    seq_len = 681,
-    condition = 6,
-    verbose = FALSE
-  )
-
-donnee <- unlist(rep)
-
-# plot(donnee, type = "l")
+plot(donnee, type = "l")
 
 # Partie Chercher les fenêtres viables pour une taille de query donnée
 print("Chercher fenetre viable")
@@ -87,7 +86,7 @@ tps <- system.time({
     }
   }
   
-  step_threshold <- 50
+  step_threshold <- 2
   threshold_cos <- 0.95
   puiss <- 3
   
@@ -113,35 +112,23 @@ tps <- system.time({
     # step_threshold <- sample(borne_a:borne_b, 1)
     debut <- debut + step_threshold
     fin <- debut + queryTaille
-    
-    if ((fin + queryTaille + gapTaille) >= length(donnee)) {
-      if (length(cos_score) > 50) {
-        while (length(cos_score) > 50) {
-          threshold_cos <- threshold_cos + (45 * (10 ^ (-puiss)))
-          puiss <- puiss + 1
-          # print(threshold_cos)
-          critere <- function(x, y) {
-            x < y
-          }
-          cos_score <- cos_score[!critere(cos_score, threshold_cos)]
-          deb_vect <- deb_vect[!critere(cos_score, threshold_cos)]
-        }
-      }
-    }
   }
+  
   for (i in 1:length(deb_vect)) {
-    print(deb_vect[i])
+    # print(deb_vect[i])
     debut <- deb_vect[i]
     fin <- debut + queryTaille
-    fenetresViable <- cbind(fenetresViable,
-                            queryTemp <- dataModif[debut:(fin - 1)])
-    colnames(fenetresViable)[ncol(fenetresViable)] <-
-      paste0("Debut = ", deb_vect[i])
-    
-    repTemp <- dataModif[fin:(fin + gapTaille - 1)]
-    reponseViable <- cbind(reponseViable, repTemp)
-    colnames(reponseViable)[ncol(reponseViable)] <-
-      paste0("Debut = ", deb_vect[i])
+    if (compute.indicateurComp(queryRef, dataModif[debut:(fin - 1)])[12] >= 7) {
+      fenetresViable <- cbind(fenetresViable,
+                              queryTemp <- dataModif[debut:(fin - 1)])
+      colnames(fenetresViable)[ncol(fenetresViable)] <-
+        paste0("Debut = ", deb_vect[i])
+      
+      repTemp <- dataModif[fin:(fin + gapTaille - 1)]
+      reponseViable <- cbind(reponseViable, repTemp)
+      colnames(reponseViable)[ncol(reponseViable)] <-
+        paste0("Debut = ", deb_vect[i])
+    }
   }
   fenetresViable <- subset(fenetresViable, select = -1)
   reponseViable <- subset(reponseViable, select = -1)
@@ -161,8 +148,10 @@ tps <- system.time({
   g = 0.001
   print(length(fenetresViable))
   
-  matriceDTW <- compute.DistanceMatrixDTW(fenetresViable,normalize = FALSE)
-  matriceSDTW <- compute.DistanceMatrixSDTW(fenetresViable, g, normalize = FALSE)
+  matriceDTW <-
+    compute.DistanceMatrixDTW(fenetresViable, normalize = FALSE)
+  matriceSDTW <-
+    compute.DistanceMatrixSDTW(fenetresViable, g, normalize = FALSE)
 })
 tps <- tps["elapsed"]
 print(paste("Les temps pour le calcul des matrice est de ", tps, "secondes"))
@@ -644,11 +633,11 @@ for (i in 1:gapTaille) {
 # medRepC1DTW <- medRepC1DTW + (donnee[gapStart - 1] - medRepC1DTW[1])
 # medRepC1SDTW <-
 #   medRepC1SDTW + (donnee[gapStart - 1] - medRepC1SDTW[1])
-# 
+#
 # medRepC4DTW <- medRepC4DTW + (donnee[gapStart - 1] - medRepC4DTW[1])
 # medRepC4SDTW <-
 #   medRepC4SDTW + (donnee[gapStart - 1] - medRepC4SDTW[1])
-# 
+#
 # medRepC5DTW <- medRepC5DTW + (donnee[gapStart - 1] - medRepC5DTW[1])
 # medRepC5SDTW <-
 #   medRepC5SDTW + (donnee[gapStart - 1] - medRepC5SDTW[1])
