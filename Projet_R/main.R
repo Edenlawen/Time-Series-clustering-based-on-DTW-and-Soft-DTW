@@ -26,9 +26,11 @@ set.seed(1)
 
 
 donnee <- datasets::co2
+plot(donnee, type = "l")
+
 donnee <- unlist(TimeWarp(
   data = r_to_py(donnee),
-  nbpts = 500000,
+  nbpts = 80000,
   seq_len = 467,
   condition = 8,
   verbose = FALSE
