@@ -30,9 +30,9 @@ plot(donnee, type = "l")
 
 donnee <- unlist(TimeWarp(
   data = r_to_py(donnee),
-  nbpts = 80000,
+  nbpts = 500000,
   seq_len = 467,
-  condition = 8,
+  condition = 7,
   verbose = FALSE
 ))
 
@@ -54,6 +54,7 @@ donnee <- unlist(TimeWarp(
 # donnee <- unlist(rep)
 
 plot(donnee, type = "l")
+abline(v = 467, col = "red", lwd = 3)
 
 # Partie Chercher les fenêtres viables pour une taille de query donnée
 print("Chercher fenetre viable")
@@ -88,7 +89,8 @@ tps <- system.time({
     }
   }
   
-  step_threshold <- 2
+  #step_threshold <- 2
+  step_threshold <- 5
   threshold_cos <- 0.95
   puiss <- 3
   
