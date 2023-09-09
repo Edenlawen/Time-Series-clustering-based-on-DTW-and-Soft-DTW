@@ -607,9 +607,9 @@ for (i in 1:gapTaille) {
   medRepC1SDTW <-
     c(medRepC1SDTW, quantile(repC1SDTW[, i], 0.5))
   
-  medRepC4DTW <- c(medRepC4DTW, quantile(repC5DTW[, i], 0.5))
+  medRepC4DTW <- c(medRepC4DTW, quantile(repC4DTW[, i], 0.5))
   medRepC4SDTW <-
-    c(medRepC4SDTW, quantile(repC5SDTW[, i], 0.5))
+    c(medRepC4SDTW, quantile(repC4SDTW[, i], 0.5))
   
   medRepC5DTW <- c(medRepC5DTW, quantile(repC5DTW[, i], 0.5))
   medRepC5SDTW <-
@@ -621,9 +621,9 @@ for (i in 1:gapTaille) {
   avgRepC1SDTW <-
     c(avgRepC1SDTW, mean(repC1SDTW[, i]))
   
-  avgRepC4DTW <- c(avgRepC4DTW, mean(repC5DTW[, i]))
+  avgRepC4DTW <- c(avgRepC4DTW, mean(repC4DTW[, i]))
   avgRepC4SDTW <-
-    c(avgRepC4SDTW, mean(repC5SDTW[, i]))
+    c(avgRepC4SDTW, mean(repC4SDTW[, i]))
   
   avgRepC5DTW <- c(avgRepC5DTW, mean(repC5DTW[, i]))
   avgRepC5SDTW <-
