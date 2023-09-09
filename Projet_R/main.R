@@ -555,10 +555,10 @@ for (i in 1:length(reponseViable)) {
     repC1SDTW <- cbind(repC1SDTW, reponseViable[, i])
   }
   if (resultatPamDTW[i] == which.min(avgAmpAvgClusterDTW)) {
-    repC5DTW <- cbind(repC4DTW, reponseViable[, i])
+    repC4DTW <- cbind(repC4DTW, reponseViable[, i])
   }
   if (resultatPamSDTW[i] == which.min(avgAmpAvgClusterSDTW)) {
-    repC5SDTW <- cbind(repC4SDTW, reponseViable[, i])
+    repC4SDTW <- cbind(repC4SDTW, reponseViable[, i])
   }
   if (resultatPamDTW[i] == which.min(avgAmpClusterDTW)) {
     repC5DTW <- cbind(repC5DTW, reponseViable[, i])
@@ -569,15 +569,15 @@ for (i in 1:length(reponseViable)) {
 }
 repC1DTW <- subset(repC1DTW, select = -1)
 repC1SDTW <- subset(repC1SDTW, select = -1)
-repC4DTW <- subset(repC5DTW, select = -1)
-repC4SDTW <- subset(repC5SDTW, select = -1)
+repC4DTW <- subset(repC4DTW, select = -1)
+repC4SDTW <- subset(repC4SDTW, select = -1)
 repC5DTW <- subset(repC5DTW, select = -1)
 repC5SDTW <- subset(repC5SDTW, select = -1)
 
 repC1DTW <- t(repC1DTW)
 repC1SDTW <- t(repC1SDTW)
-repC4DTW <- t(repC5DTW)
-repC4SDTW <- t(repC5SDTW)
+repC4DTW <- t(repC4DTW)
+repC4SDTW <- t(repC4SDTW)
 repC5DTW <- t(repC5DTW)
 repC5SDTW <- t(repC5SDTW)
 
