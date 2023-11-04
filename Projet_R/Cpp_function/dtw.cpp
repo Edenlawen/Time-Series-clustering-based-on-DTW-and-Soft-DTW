@@ -1,5 +1,8 @@
 #include <Rcpp.h>
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
 using namespace std;
 using namespace Rcpp;
@@ -20,15 +23,11 @@ NumericMatrix costMatrix(vector<double> P, vector<double> Q, bool verbose = fals
    */
   if(verbose==true){cout << "Etape 1 qui commence" << endl;}
   // Première Boucle
-  for (int x = 1; x < Q.size(); x++)
-  {
-    matrice[0][x] = abs(P[0] - Q[x]) + matrice[0][x - 1];
-  }
+  for_each(matrice[0].begin() + 1, matrice[0].end(), [&](double& x) { x = abs(P[0] - Q[&x - &matrice[0][0]]) + matrice[0][&x - &matrice[0][0] - 1]; });
+  
   // Deuxième Boucle
-  for (int y = 1; y < P.size(); y++)
-  {
-    matrice[y][0] = abs(P[y] - Q[0]) + matrice[y - 1][0];
-  }
+  for_each(matrice.begin() + 1, matrice.end(), [&](vector<double>& x) { x[0] = abs(P[&x - &matrice[0]] - Q[0]) + matrice[&x - &matrice[0] - 1][0]; });
+  
   if(verbose==true){cout << "Etape 1 fini" << endl;}
   
   /*
@@ -39,14 +38,13 @@ NumericMatrix costMatrix(vector<double> P, vector<double> Q, bool verbose = fals
   if(verbose==true){cout << "Etape 2 qui commence" << endl;}
   for (int i = 1; i < P.size(); i++)
   {
-    for (int j = 1; j < Q.size(); j++)
-    {
-      int d = abs(P[i] - Q[j]);
-      matrice[i][j] = min({d + matrice[i - 1][j], 2 * d + matrice[i - 1][j - 1], d + matrice[i][j - 1]});
-      /* Méthode de la prof
-      matrice[i][j] = d + min({matrice[i - 1][j], 2 * matrice[i - 1][j - 1], matrice[i][j - 1]});
-      */
-    }
+    for_each(matrice[i].begin() + 1, matrice[i].end(), [&](double& x) { 
+      double d = abs(P[i] - Q[&x - &matrice[i][0]]);
+      x =  min({ d + matrice[i - 1][&x - &matrice[i][0]], 2 * d + matrice[i - 1][&x - &matrice[i][0] - 1], d+ matrice[i][&x - &matrice[i][0] - 1] });
+      /* Methode de la prof
+       x = d + min({ matrice[i - 1][&x - &matrice[i][0]], 2 * matrice[i - 1][&x - &matrice[i][0] - 1], matrice[i][&x - &matrice[i][0] - 1] });
+       */
+    });
   }
   if(verbose==true){cout << "Etape 2 fini" << endl;}
   
@@ -76,15 +74,11 @@ double costFin(vector<double> P, vector<double> Q, bool verbose = false){
    */
   if(verbose==true){cout << "Etape 1 qui commence" << endl;}
   // Première Boucle
-  for (int x = 1; x < Q.size(); x++)
-  {
-    matrice[0][x] = abs(P[0] - Q[x]) + matrice[0][x - 1];
-  }
+  for_each(matrice[0].begin() + 1, matrice[0].end(), [&](double& x) { x = abs(P[0] - Q[&x - &matrice[0][0]]) + matrice[0][&x - &matrice[0][0] - 1]; });
+  
   // Deuxième Boucle
-  for (int y = 1; y < P.size(); y++)
-  {
-    matrice[y][0] = abs(P[y] - Q[0]) + matrice[y - 1][0];
-  }
+  for_each(matrice.begin() + 1, matrice.end(), [&](vector<double>& x) { x[0] = abs(P[&x - &matrice[0]] - Q[0]) + matrice[&x - &matrice[0] - 1][0]; });
+  
   if(verbose==true){cout << "Etape 1 fini" << endl;}
   
   /*
@@ -95,18 +89,17 @@ double costFin(vector<double> P, vector<double> Q, bool verbose = false){
   if(verbose==true){cout << "Etape 2 qui commence" << endl;}
   for (int i = 1; i < P.size(); i++)
   {
-    for (int j = 1; j < Q.size(); j++)
-    {
-      int d = abs(P[i] - Q[j]);
-      matrice[i][j] = min({d + matrice[i - 1][j], 2 * d + matrice[i - 1][j - 1], d + matrice[i][j - 1]});
-      /* Méthode de la prof
-      matrice[i][j] = d + min({matrice[i - 1][j], 2 * matrice[i - 1][j - 1], matrice[i][j - 1]});
-      */
-    }
+    for_each(matrice[i].begin() + 1, matrice[i].end(), [&](double& x) { 
+      double d = abs(P[i] - Q[&x - &matrice[i][0]]);
+      x =  min({ d + matrice[i - 1][&x - &matrice[i][0]], 2 * d + matrice[i - 1][&x - &matrice[i][0] - 1], d+ matrice[i][&x - &matrice[i][0] - 1] });
+      /* Methode de la prof
+       x = d + min({ matrice[i - 1][&x - &matrice[i][0]], 2 * matrice[i - 1][&x - &matrice[i][0] - 1], matrice[i][&x - &matrice[i][0] - 1] });
+       */
+    });
   }
   if(verbose==true){cout << "Etape 2 fini" << endl;}
   
-
+  
   
   return matrice[P.size() - 1][Q.size() - 1];
 }

@@ -30,9 +30,9 @@ plot(donnee, type = "l")
 
 donnee <- unlist(TimeWarp(
   data = r_to_py(donnee),
-  nbpts = 500000,
+  nbpts = 100000,
   seq_len = 467,
-  condition = 7,
+  condition = 8,
   verbose = FALSE
 ))
 
@@ -90,7 +90,7 @@ tps <- system.time({
   }
   
   #step_threshold <- 2
-  step_threshold <- 5
+  step_threshold <- 2
   threshold_cos <- 0.95
   puiss <- 3
   
@@ -183,6 +183,7 @@ nbclusterDTW <-
                method = "silhouette", )
 nbclusterDTW <- nbclusterDTW$data$y
 nbclusterDTW <- which.max(nbclusterDTW)
+nbclusterDTW <- 6
 nbclusterSDTW <-
   fviz_nbclust(t(fenetresViable),
                pam,
@@ -190,6 +191,7 @@ nbclusterSDTW <-
                method = "silhouette", )
 nbclusterSDTW <- nbclusterSDTW$data$y
 nbclusterSDTW <- which.max(nbclusterSDTW)
+nbclusterSDTW <- 6
 
 resultatPamDTW <-
   pam(matriceDTW,
@@ -611,9 +613,9 @@ for (i in 1:gapTaille) {
   medRepC1SDTW <-
     c(medRepC1SDTW, quantile(repC1SDTW[, i], 0.5))
   
-  medRepC4DTW <- c(medRepC4DTW, quantile(repC5DTW[, i], 0.5))
+  medRepC4DTW <- c(medRepC4DTW, quantile(repC4DTW[, i], 0.5))
   medRepC4SDTW <-
-    c(medRepC4SDTW, quantile(repC5SDTW[, i], 0.5))
+    c(medRepC4SDTW, quantile(repC4SDTW[, i], 0.5))
   
   medRepC5DTW <- c(medRepC5DTW, quantile(repC5DTW[, i], 0.5))
   medRepC5SDTW <-
@@ -625,9 +627,9 @@ for (i in 1:gapTaille) {
   avgRepC1SDTW <-
     c(avgRepC1SDTW, mean(repC1SDTW[, i]))
   
-  avgRepC4DTW <- c(avgRepC4DTW, mean(repC5DTW[, i]))
+  avgRepC4DTW <- c(avgRepC4DTW, mean(repC4DTW[, i]))
   avgRepC4SDTW <-
-    c(avgRepC4SDTW, mean(repC5SDTW[, i]))
+    c(avgRepC4SDTW, mean(repC4SDTW[, i]))
   
   avgRepC5DTW <- c(avgRepC5DTW, mean(repC5DTW[, i]))
   avgRepC5SDTW <-
